@@ -3,7 +3,6 @@ https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-am
 
 # VM template config
 ip_address: 192.168.33.102
-
 vm_name: yocrai
 
 server_domain: com
