@@ -1,0 +1,120 @@
+Vagrant.require_version ">= 1.6.5"
+unless Vagrant.has_plugin?("vagrant-vbguest")
+  raise "Please install the vagrant-vbguest plugin by running `vagrant plugin install vagrant-vbguest`"
+end
+
+VAGRANTFILE_API_VERSION = "2"
+
+MEMORY = 4096
+CPU_COUNT = 2
+
+ENV['VAGRANT_X11'] = 'true'
+
+require 'yaml'
+settings = YAML.load_file 'vagrant.yml'
+
+$conda_installation = <<SCRIPT
+#yum -y install bzip2
+sudo apt-get update 
+sudo apt-get install bzip2 
+#curl https://repo.continuum.io/archive/Anaconda3-5.0.1-Linux-x86_64.sh -o anaconda.sh || exit 1;
+chmod +x /vagrant/anaconda.sh || exit 1;
+#sudo bash /vagrant/anaconda.sh -b -p /opt/anaconda || exit 1;
+bash /vagrant/anaconda.sh -b -p ${HOME}/anaconda || exit 1;
+
+grep -q anaconda ~/.bashrc;
+if [[ ${?} -ne 0 ]]; then
+    #echo "export PATH=\"${HOME}/anaconda/bin:\${PATH}\"" >> ~/.bashrc
+    echo "export PATH=\"${HOME}/anaconda/bin:\${PATH}\"" >> ~/.bashrc
+fi
+source ~/.bashrc
+
+printf '%s\n' "if [ -s ~/.bashrc ]; then" "  source ~/.bashrc;" "fi" > ~/.bash_profile
+source ~/.bash_profile
+
+sudo -H -u vagrant bash -i -c 'conda info' || exit 1;
+#sudo -H -u vagrant bash -i -c 'rm /vagrant/anaconda.sh' || exit 1;
+sudo -H -u vagrant bash -i -c 'conda clean -t' || exit 1;
+sudo -H -u vagrant bash -i -c 'echo "Ananconda has been successfully installed ^-^"' || exit 1;
+
+#yum clean all || exit 1;
+
+echo '' > ${HOME}/.bash_history
+history -c
+SCRIPT
+
+# Script to configure Jupyter notebook for external access
+$jupyter_config = <<SCRIPT
+${HOME}/anaconda/bin/jupyter notebook --generate-config
+echo "
+c.NotebookApp.ip = '0.0.0.0'
+c.NotebookApp.password = ''
+c.NotebookApp.token = ''
+" >> /home/vagrant/.jupyter/jupyter_notebook_config.py
+SCRIPT
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  #config.ssh.insert_key = false
+
+  config.vm.box     = "trusty64"
+  #config.vm.box_url = "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
+  config.vm.box_url = "storage/trusty-server-cloudimg-amd64-vagrant-disk1.box"
+  #config.vm.provision "shell", inline: $conda_installation, privileged: false
+
+  #Set hostname
+  config.vm.hostname = "#{settings['vm_name']}.#{settings['server_domain']}"
+
+  #config.vm.network :private_network, ip: "192.168.33.100"
+  config.vm.network :private_network, ip: settings['ip_address']
+  config.vm.network "forwarded_port", guest: settings['port_guest'], host: settings['port_host']
+
+  config.vm.synced_folder  ".", "/vagrant", disabled: false
+
+  # Enable X11 forwarding so we can interact with GUI applications
+  if ENV['VAGRANT_X11']
+    config.ssh.forward_x11 = true
+  end
+
+  config.vm.provider :virtualbox do |vb|
+    vb.name = "yocrai-vm"
+    vb.customize ["modifyvm", :id, "--memory", MEMORY.to_s]
+    vb.customize ["modifyvm", :id, "--cpus", CPU_COUNT.to_s]
+
+    # Allow DNS to work for Ubuntu 12.10 host
+    # http://askubuntu.com/questions/238040/how-do-i-fix-name-service-for-vagrant-client
+    vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+  end
+
+  ["vmware_fusion", "vmware_workstation"].each do |vmware_provider|
+    config.vm.provider vmware_provider do |v, override|
+      override.vm.box     = "yocrai_vmware"
+      v.vmx["memsize"] = MEMORY.to_s
+      v.vmx["numvcpus"] = CPU_COUNT.to_s
+    end
+  end
+
+  # Use vagrant-vbguest plugin to make sure Guest Additions are in sync
+  config.vbguest.auto_reboot = true
+  config.vbguest.auto_update = true
+
+
+  config.vm.provision "shell", inline: $conda_installation, privileged: false
+
+  # Install lubuntu desktop and virtualbox additions
+  # config.vm.provision "shell", inline: "sudo apt-get install -y --no-install-recommends lubuntu-desktop virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11"
+  # Allow anyone to start the GUI
+  # config.vm.provision "shell", inline: "sudo sed -i 's/allowed_users=.*$/allowed_users=anybody/' /etc/X11/Xwrapper.config"
+  # Run GUI from the start
+  # config.vm.provision "shell", inline: "echo '[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && exec startx' >> /home/vagrant/.bash_profile"
+ 
+
+  # Install other required conda packages
+  config.vm.provision "shell", inline: "${HOME}/anaconda/bin/conda install -y tensorflow", privileged: false
+
+  # Install pip packages (not available in conda)
+  config.vm.provision "shell", inline: "${HOME}/anaconda/bin/pip install keras", privileged: false
+
+  # Configure Jupyter notebook
+  config.vm.provision "shell", inline: $jupyter_config, privileged: false
+
+end
