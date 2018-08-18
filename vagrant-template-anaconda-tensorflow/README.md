@@ -1,3 +1,9 @@
+# Template components
+This vagrant template extends the standard anaconda vagrantfile with the following compnents:
+anaconda<br />
+Jupyter<br />
+tensorflow <br />
+
 # vagrant-images
 https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box
 
