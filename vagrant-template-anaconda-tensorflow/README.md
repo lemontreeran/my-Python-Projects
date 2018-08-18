@@ -4,12 +4,9 @@ https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-am
 # VM template config
 ip_address: 192.168.33.102<br />
 vm_name: yocrai<br />
-
-server_domain: com
-
-port_guest: 8888
-
-port_host: 8888
+server_domain: com<br />
+port_guest: 8888<br />
+port_host: 8888<br />
 
 # anaconda config script
 https://repo.continuum.io/archive/Anaconda3-5.0.1-Linux-x86_64.sh
