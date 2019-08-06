@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-sudo yum install curl git-core gcc make zlib-devel bzip2 bzip2-devel readline-devel sqlite \
+sudo yum -y install curl git-core gcc make zlib-devel bzip2 bzip2-devel readline-devel sqlite \
 sqlite-devel openssl-devel xz xz-devel libffi-devel
 
 if [ ! -d "$HOME/.pyenv" ]; then
