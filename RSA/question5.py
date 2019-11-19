@@ -25,12 +25,20 @@ def main():
     logger.info("The HCF for {} and {} is : {}".format(input_number1, input_number2, ans[0]))
     logger.info("The linear congruence 342952340x=1 mod4230493243 is : {}".format(ans[1]))
 
-def euclicid(a, b):
-    """ Euclicid Algorithm, returns hcf, and x, y in d = hcf(a, b) = ax + by """
+def euclid(a, b):
+    """ Euclid Algorithm, returns hcf, and x, y in d = hcf(a, b) = ax + by """
     if b == 0:
         return [a, 1, 0]
     else:
-        [dn, xn, yn] = euclicid(b, a % b)
+        # if aX +bY = hcf(a,b)
+        # and bXn + (a mob b)Yn = hcf(b,(a mod b))
+        # according to Euclid's algorithm:
+        # hcf(a,b)=hcf(b,(a mode b))
+        # then aX + bY = bXn + (a mod b)Yn
+        # because a mod b = a - (a/b)b
+        # so aX + bY = aYn + bXn - (a/b)bYn
+        # so X = Yn, and Y = Yn - (a/b)Yn
+        [dn, xn, yn] = euclid(b, a % b)
         [d, x, y] = [dn, yn, xn - (a // b) * yn]
         return [d, x, y]
 
