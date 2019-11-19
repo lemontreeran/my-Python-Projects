@@ -3,13 +3,14 @@ import sys
 import logging
 from rsa_key_helper import get_private_key
 
-logger = logging.getLogger()
-handler = logging.StreamHandler()
-formatter = logging.Formatter(
-        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-logger.setLevel(logging.DEBUG)
+LOGGING_LEVEL = logging.INFO
+#logging_level = logging.debug
+if None != os.getenv('LOGGING_LEVEL'):
+    LOGGING_LEVEL = logging.getLevelName(os.getenv('LOGGING_LEVEL'))
+logger = logging.getLogger(__name__)
+logger.setLevel(LOGGING_LEVEL)
+stream_handler = logging.StreamHandler(sys.stdout)
+logger.addHandler(stream_handler)
 
 def main():
     """ Question 7
