@@ -21,8 +21,6 @@ def factorisation(number):
 	 * Use Miller Rabin algorithm to check prime number
 	 * Use Pollard Rho algorithm for factorisation
     """
-    # f = lambda x: (x * x + 1) % number
-    # '''defining a quadratic function f(x) = (x^2 + 1) mod n for Pollard''s Rho Algorithm'''
 
     origin_number = number
     p = []
@@ -82,8 +80,6 @@ def miller_rabin(n) :
     return False
 
 def pollard_rho(n):
-    # logger.debug("This number to be checked: {}".format(n))
-
     # Collard''s Rho Algorithm
     if n % 2 == 0:
         return 2

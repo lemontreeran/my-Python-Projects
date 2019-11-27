@@ -44,25 +44,32 @@ def miller_rabin(n) :
     n - the number to test for primality.
     """
 
-    k = 0
+    r = 0
     x = n-1
     runner = False
     a = random.randint(1, n-1)
 
-    # continuously extract the factor 2 in the index n-1
+    # continuously extract the factor 2 in the index n-1 in the Fermat's Little Theorem,
+    # so n-1 = d*2^r (d is an odd number)
+    # According to Quadratic Probing:
+    # a^(d * 2^(r-1)) = 1 or = n -1
+    # if a^(d * 2^(r-1)) = 1, we can reiterate on a^(d * 2^(r-2)).
+    # in the end:
+    # either we get a^(d * 2^0), the Fermat's Little Theorem becomes a^d mod n=1
+    # or there is a number j, a^(d*2^j) mod n=n-1 ( 0<=j<r ) 
     while(runner == False):
         x = x >> 1
-        k = k+1
+        r = r+1
         if(x & 1):
             runner = True
-    d = (n-1) >> k
+    d = (n-1) >> r
 
-    # check a^q mod n=1
+    # check a^d mod n = 1
     value = pow(a, d, n)
     if value == 1:
         return True
 
-    # check a^(d*2^i) mod n=n-1 ( 0<=i<r )
+    # check a^(d*^j) mod n = n-1 ( 0<=j<r )
     for j in range(0, k):
         if pow(a,(pow(2, j)*d), n) == n-1:
             return True

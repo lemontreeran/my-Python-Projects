@@ -29,6 +29,14 @@ def euclicid(a, b):
     if b == 0:
         return [a, 1, 0]
     else:
+        # if aX +bY = hcf(a,b)
+        # and bXn + (a mob b)Yn = hcf(b,(a mod b))
+        # according to Euclid's algorithm:
+        # hcf(a,b)=hcf(b,(a mode b))
+        # then aX + bY = bXn + (a mod b)Yn
+        # because a mod b = a - (a/b)b
+        # so aX + bY = aYn + bXn - (a/b)bYn
+        # so X = Yn, and Y = Yn - (a/b)Yn
         [dn, xn, yn] = euclicid(b, a % b)
         [d, x, y] = [dn, yn, xn - (a // b) * yn]
         return [d, x, y]
