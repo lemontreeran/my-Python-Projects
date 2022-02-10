@@ -1,7 +1,13 @@
 #!/bin/bash
 # https://github.com/pyenv/pyenv/wiki#suggested-build-environment
-sudo yum -y install curl git-core gcc make zlib-devel bzip2 bzip2-devel readline-devel sqlite \
-sqlite-devel openssl-devel xz xz-devel libffi-devel
+# Ubuntu/Debian/Mint:
+sudo apt-get update; sudo apt-get install make build-essential libssl-dev zlib1g-dev \
+libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
+libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+# CentOS/Fedora 21 and below:
+yum install gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel
+# Fedora 22 and above
+dnf install make gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel
 
 if [ ! -d "$HOME/.pyenv" ]; then
   echo "===== Installing pyenv ====="
